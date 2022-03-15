@@ -6,69 +6,84 @@
 <script type="text/javascript" src="https://unpkg.com/@antv/l7plot@latest/dist/umd/l7plot.min.js"></script>
 <script type="text/javascript" src="chroma.min.js"></script>
 <style>
-    #container{
+    #container {
         height: 100%;
     }
 </style>
 <script>
     const {Dot} = L7Plot;
+
 </script>
 <div id="container"></div>
 
 <script>
 
-const cScale = chroma.scale(['green','yellow', 'red']);
-fetch('with_size.json')
-  .then((response) => response.json())
-  .then((data) => {
-    new Dot('container', {
-      map: {
-        type: 'mapbox',
-        style: 'dark',
-        center: [103.447303, 31.753574],
-        zoom: 7,
-        pitch: 0,
-      },
-      source: {
-        data: data,
-        parser: { type: 'json', x: 'lat', y: 'lng' },
-      },
-      color: {
-        field: 'median',
-        value: ({median}) => {
-            let number = (median-50)/150;
-            let color = cScale(number);
-            console.log(number)
-            return color.hex();
-        },
-        scale: { type: 'linear' },
-      },
-      size: {
-        field: 'size',
-        value: ({ size }) => (size + 100) /20,
-      },
-      style: {
-        opacity: 0.8,
-        strokeWidth: 0,
-      },
-      state: {
-        active: { color: '#FFF684' },
-      },
-      autoFit: true,
-      zoom: {
-        position: 'topright',
-      },
-      scale: {
-        position: 'bottomright',
-      },
-      tooltip: {
-        items: ['index', 'median', 'size'],
-      },
-      legend: {
-        position: 'bottomleft',
-      },
-    });
-  });
+    const cScale = chroma.scale(["green", 'yellow', 'red']);
+    fetch('with_size.json')
+        .then((response) => response.json())
+        .then((_data) => {
+            const data = _data.filter(d=>d.median<180 && d.median > 40)
+            let min = 99999999999999
+            let max = 0
+            for (const item of data) {
+                if (item.median > max) {
+                    max = item.median
+                }
+                if (item.median < min) {
+                    min = item.median
+                }
+            }
+            const range = max - min
+            console.log(min, max, range)
+
+            new Dot('container', {
+                map: {
+                    type: 'mapbox',
+                    style: 'dark',
+                    center: [103.447303, 31.753574],
+                    zoom: 7,
+                    pitch: 0,
+                },
+                source: {
+                    data: data,
+                    parser: {type: 'json', x: 'lat', y: 'lng'},
+                },
+                color: {
+                    field: 'median',
+                    value: ({median}) => {
+                        let number = (median - min) / range;
+                        let color = cScale(number);
+                        console.log(number)
+                        return color.hex();
+                    },
+                    scale: {type: 'linear'},
+                },
+                size: {
+                    field: 'size',
+                    value: ({size}) => (size + 100) / 24,
+                },
+                style: {
+                    opacity: 0.8,
+                    strokeWidth: 0,
+                },
+                state: {
+                    active: {color: '#FFF684'},
+                },
+                autoFit: true,
+                zoom: {
+                    position: 'topright',
+                },
+                scale: {
+                    position: 'bottomright',
+                },
+                tooltip: {
+                    items: ['index', 'median', 'size'],
+                },
+                legend: {
+                    position: 'bottomleft',
+                },
+            });
+        });
 </script>
 </body>
 </html>

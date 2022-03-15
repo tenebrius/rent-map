@@ -3,32 +3,31 @@ import json
 
 from loc_db import load_loc_db, getCoords
 
+files = [
+    'lanjia.json',
+    'scrapper_58_db.json',
+]
+
 
 def prepare():
-    f = open('scrapper_db.json', 'r', encoding="utf-8")
-    data = json.load(f)
-
-
     nItems = []
-    for item in data:
-        nItem = [p for p in item if p != "精选"]
-        nItems.append(nItem)
+    for file in files:
+        f = open(file, 'r', encoding="utf-8")
+        nItems = nItems + json.load(f)
+
 
     prices = []
     locs = []
     areas = []
     rates = []
     for item in nItems:
+        print(item)
+        area = int(round(float(item.pop(0))))
+        areas.append(area)
+        loc = item.pop(0)
+        locs.append(loc)
         price = int(item.pop(0))
         prices.append(price)
-        loc = item.pop(0) + "," + item.pop(0)
-        # locs1.append(item.pop(0))
-        # locs2.append(item.pop(0))
-        if len(item) == 5:
-            loc = loc + "," + item.pop(0)
-        locs.append(loc)
-        area = int(float(item.pop(0).replace("㎡", "")))
-        areas.append(area)
         rates.append(round(price / area))
     df = pd.DataFrame({"loc": locs,
                        "price": prices,
@@ -52,6 +51,7 @@ def median():
     medians = groupby.agg(median=('rate', 'median'), size=('rate', 'size'))
     medians.to_json("medians.json")
     print("total groups:", len(medians))
+
 
 def geo():
     df = pd.read_json('medians.json')
@@ -81,6 +81,7 @@ def geo():
     df['lat'] = lat
     print("geo done")
     df.to_json("geo.json")
+
 
 def final():
     df = pd.read_json('geo.json')
@@ -125,6 +126,6 @@ def final():
 
 if __name__ == '__main__':
     # prepare()
-    # median()
-    # geo()
+    median()
+    geo()
     final()

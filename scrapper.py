@@ -74,6 +74,37 @@ def download_page(url):
     return items
 
 
+def clean_lanjia_scrap ():
+    f = open('lanjia_scrap.json', 'r', encoding="utf-8")
+    data = json.load(f)
+
+    nItems = []
+    for item in data:
+        nItem = [p for p in item if p != "精选"]
+        nItems.append(nItem)
+
+    prices = []
+    locs = []
+    areas = []
+    items = []
+    for item in nItems:
+        price = int(item.pop(0))
+        prices.append(price)
+
+        loc = item.pop(0) + "-" + item.pop(0)
+        # locs1.append(item.pop(0))
+        # locs2.append(item.pop(0))
+        if len(item) == 5:
+            loc = loc + "-" + str(item.pop(0))
+        locs.append(loc)
+        area = int(float(item.pop(0).replace("㎡", "")))
+        areas.append(area)
+        items.append([str(area), loc, str(price)])
+
+    with open("lanjia.json", 'w', encoding='utf-8') as outfile:
+        json.dump(items, outfile, ensure_ascii=False)
+
 if __name__ == '__main__':
     # load_db()
-    download_all(1000, 1500)
+    # download_all(1000, 1500)
+    clean_lanjia_scrap()
